@@ -1,0 +1,53 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+The [R plugin](https://www.jetbrains.com/help/pycharm/r-plugin-support.html) for IntelliJ-based IDEs provides
+handy capabilities to work with the [R Markdown](https://www.jetbrains.com/help/pycharm/r-markdown.html) files.
+To [add](https://www.jetbrains.com/help/pycharm/r-markdown.html#add-code-chunk) a new R chunk,
+position the caret at any line or the code chunk, then click "+".
+
+The code chunk appears:
+```{r}
+setwd('/Users/emilyziyixiao/DataspellProjects/AdvDsFinance/HW4')
+```
+
+Type any R code in the chunk, for example:
+```{r}
+# Load data from csv file
+df <- read.csv("autism.csv")
+
+# Define Age and Grp variables
+df$Age <- df$age - 2
+df$Grp <- factor(df$sicdegp, levels=c(1,2,3), ordered=TRUE)
+
+# Define model formulas
+model_a_formula <- "vsae ~ Age + I(Age^2) + Grp + Age:Grp + I(Age^2):Grp + (0 + Age + I(Age^2) | childid)"
+model_b_formula <- "vsae ~ Age + I(Age^2) + Grp + Age:Grp + I(Age^2):Grp + (0 + Age | childid)"
+model_c_formula <- "vsae ~ Age + I(Age^2) + Grp + Age:Grp + (0 + Age + I(Age^2) | childid)"
+
+# Fit models using mixed_model
+library(lme4)
+model_a <- lmer(formula=model_a_formula, data=df, REML=TRUE)
+model_b <- lmer(formula=model_b_formula, data=df, REML=TRUE)
+model_c <- lmer(formula=model_c_formula, data=df, REML=TRUE)
+
+# Report log-likelihood for each model
+cat("Model A log-likelihood:", logLik(model_a), "\n")
+cat("Model B log-likelihood:", logLik(model_b), "\n")
+cat("Model C log-likelihood:", logLik(model_c), "\n")
+
+# Perform model selection
+models <- list(A=model_a, B=model_b, C=model_c)
+aic_values <- sapply(models, AIC)
+best_model <- names(aic_values)[which.min(aic_values)]
+cat("Best model according to AIC:", best_model, "\n")
+
+```
+```{r}
+summary(model_a)
+```
+
+Now, click the **Run** button on the chunk toolbar to [execute](https://www.jetbrains.com/help/pycharm/r-markdown.html#run-r-code) the chunk code. The result should be placed under the chunk.
+Click the **Knit and Open Document** to build and preview an output.
